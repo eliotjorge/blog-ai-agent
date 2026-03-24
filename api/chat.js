@@ -39,7 +39,7 @@ URL: ${p.url}
       .join("\n\n");
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-pro-latest",
+      model: "gemini-3-flash-preview",
     });
 
     const result = await model.generateContent(`
