@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const fileContent = fs.readFileSync(filePath, "utf-8");
     const posts = JSON.parse(fileContent);
 
-    //const posts = JSON.parse(textjson);
+
 
     const results = posts
       .filter((post) =>
@@ -28,14 +28,22 @@ export default async function handler(req, res) {
 
     console.log("Resultados encontrados:", results.length);
 
+    // 🔥 AQUÍ VA EL CONTROL
+    if (results.length === 0) {
+      return res.status(200).json({
+        answer: "No tengo información sobre eso en el blog."
+      });
+    }
+
+    // 👇 SOLO SI HAY RESULTADOS llamas a Gemini
     const context = results
       .map(
         (p) => `
-Título: ${p.title}
-Contenido: ${p.content}
-URL: ${p.url}
-    `,
-      )
+        Título: ${p.title}
+        Contenido: ${p.content}
+        URL: ${p.url}
+      `,
+        )
       .join("\n\n");
 
     const model = genAI.getGenerativeModel({
@@ -43,10 +51,19 @@ URL: ${p.url}
     });
 
     const result = await model.generateContent(`
-Pregunta: ${question}
+      Eres un asistente que responde usando SOLO el contenido proporcionado.
 
-Contexto:
-${context}
+      REGLAS:
+      - Responde de forma clara y útil
+      - Incluye SIEMPRE la URL del post si existe
+      - NO uses información externa
+      - Si la respuesta no está clara en el contexto, dilo
+
+      Pregunta:
+      ${question}
+
+      Contexto:
+      ${context}
     `);
 
     const text = result.response.text();
