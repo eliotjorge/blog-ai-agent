@@ -2,6 +2,6 @@
   "name": "blog-ai-agent",
   "type": "module",
   "dependencies": {
-    "openai": "^4.0.0"
+    "@google/generative-ai": "^0.21.0"
   }
 }
