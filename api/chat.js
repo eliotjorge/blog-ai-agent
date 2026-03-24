@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import posts from "../data/search.json" assert { type: "json" };
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -16,18 +17,7 @@ export default async function handler(req, res) {
 
     console.log("Pregunta:", question);
 
-    //const response = await fetch("https://jorgerosa.dev/assets/js/data/search.json");
-
-    const response = await fetch("https://jorgerosa.dev/assets/js/data/search.json", {
-      headers: {
-        "Accept": "application/json"
-      }
-    });
-
-const textjson = await response.text();
-console.log("RAW RESPONSE:", textjson.slice(0, 200));
-
-const posts = JSON.parse(textjson);
+//const posts = JSON.parse(textjson);
     
 
     const results = posts
