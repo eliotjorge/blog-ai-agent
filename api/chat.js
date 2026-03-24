@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const { question } = req.body;
 
     // 🔽 Cargar tu JSON
-    const response = await fetch("https://TUWEB.com/assets/js/data/search.json");
+    const response = await fetch("https://jorgerosa.dev/assets/js/data/search.json");
     const posts = await response.json();
 
     // 🔍 Búsqueda básica
