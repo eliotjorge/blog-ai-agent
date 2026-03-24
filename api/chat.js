@@ -19,6 +19,10 @@ export default async function handler(req, res) {
     const response = await fetch("https://jorgerosa.dev/assets/js/data/search.json");
     const posts = await response.json();
 
+    const textjson = await response.text();
+    console.log("RAW RESPONSE:", textjson.slice(0, 200));
+    
+
     const results = posts
       .filter(post =>
         post.content.toLowerCase().includes(question.toLowerCase())
