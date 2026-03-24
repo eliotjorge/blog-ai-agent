@@ -17,10 +17,11 @@ export default async function handler(req, res) {
     console.log("Pregunta:", question);
 
     const response = await fetch("https://jorgerosa.dev/assets/js/data/search.json");
-    const posts = await response.json();
 
-    const textjson = await response.text();
-    console.log("RAW RESPONSE:", textjson.slice(0, 200));
+const textjson = await response.text();
+console.log("RAW RESPONSE:", textjson.slice(0, 200));
+
+const posts = JSON.parse(textjson);
     
 
     const results = posts
