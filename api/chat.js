@@ -1,7 +1,19 @@
+// =========================
+// IMPORTS (herramientas)
+// =========================
+
+// Para leer archivos del sistema (tu JSON local)
 import fs from "fs";
 import path from "path";
+
+// SDK de Gemini (IA de Google)
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// =========================
+// CONFIGURACIÓN IA
+// =========================
+
+// Aquí creas la conexión con la IA usando tu API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // =========================
@@ -15,14 +27,19 @@ function limpiarPregunta(texto) {
     .trim();
 }
 
+// =========================
+// HANDLER (tu API)
+// =========================
+
+// Esta función se ejecuta cada vez que haces:
+// POST /api/chat
+
 export default async function handler(req, res) {
   try {
     // =========================
     // 📩 INPUT USUARIO
     // =========================
-    const body = typeof req.body === "string"
-      ? JSON.parse(req.body)
-      : req.body;
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
     const { question } = body || {};
 
@@ -52,7 +69,7 @@ export default async function handler(req, res) {
     // 🔍 BÚSQUEDA CON SCORING
     // =========================
     const results = posts
-      .map(post => {
+      .map((post) => {
         const content = post.content.toLowerCase();
 
         const score = palabras.reduce((acc, palabra) => {
@@ -61,10 +78,10 @@ export default async function handler(req, res) {
 
         return { post, score };
       })
-      .filter(r => r.score > 0)
+      .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 3)
-      .map(r => r.post);
+      .map((r) => r.post);
 
     console.log("Resultados encontrados:", results.length);
 
@@ -73,7 +90,8 @@ export default async function handler(req, res) {
     // =========================
     if (results.length === 0) {
       return res.status(200).json({
-        answer: "No he encontrado información sobre eso en el blog. Prueba con otras palabras clave."
+        answer:
+          "No he encontrado información sobre eso en el blog. Prueba con otras palabras clave.",
       });
     }
 
@@ -81,11 +99,13 @@ export default async function handler(req, res) {
     // 🧩 CREAR CONTEXTO
     // =========================
     const context = results
-      .map((p) => `
-[TÍTULO]: ${p.title}
-[URL]: ${p.url}
-[CONTENIDO]: ${p.content}
-`)
+      .map(
+        (p) => `
+          [TÍTULO]: ${p.title}
+          [URL]: ${p.url}
+          [CONTENIDO]: ${p.content}
+        `,
+      )
       .join("\n\n");
 
     // =========================
@@ -99,29 +119,29 @@ export default async function handler(req, res) {
     // 🧠 PROMPT (BIBLIOTECARIO)
     // =========================
     const result = await model.generateContent(`
-Eres un asistente que actúa como bibliotecario de un blog técnico.
+      Eres un asistente que actúa como bibliotecario de un blog técnico.
 
-OBJETIVO:
-- Responder de forma clara y breve
-- Ayudar a encontrar contenido del blog
+      OBJETIVO:
+      - Responder de forma clara y breve
+      - Ayudar a encontrar contenido del blog
 
-REGLAS:
-- Usa SOLO la información del contexto
-- NO inventes información
-- Responde en máximo 5-6 líneas
-- Después añade una sección:
+      REGLAS:
+      - Usa SOLO la información del contexto
+      - NO inventes información
+      - Responde en máximo 5-6 líneas
+      - Después añade una sección:
 
-"📚 Puedes ampliar en estos posts:"
+      "📚 Puedes ampliar en estos posts:"
 
-- Lista las URLs proporcionadas
-- NO repitas contenido innecesario
+      - Lista las URLs proporcionadas
+      - NO repitas contenido innecesario
 
-Pregunta:
-${question}
+      Pregunta:
+      ${question}
 
-Contexto:
-${context}
-`);
+      Contexto:
+      ${context}
+    `);
 
     // =========================
     // 📤 RESPUESTA FINAL
@@ -129,7 +149,6 @@ ${context}
     const text = result.response.text();
 
     res.status(200).json({ answer: text });
-
   } catch (error) {
     console.error("ERROR:", error);
 
